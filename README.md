@@ -145,9 +145,9 @@ flowchart TB
     C --> D
     C --> E
     E --> F
-    F -->|"Bid: 卖方主动\n价格 &le; 报价\n累计 &ge; 1"| G1(["经 Bid\n成交"])
+    F -->|"Bid: 卖方主动\n价格 &le; 报价\nSize &ge; 1"| G1(["经 Bid\n成交"])
     F -->|"无匹配"| H
-    F -->|"Ask: 买方主动\n价格 &ge; 报价\n累计 &ge; 1"| G2(["经 Ask\n成交"])
+    F -->|"Ask: 买方主动\n价格 &ge; 报价\nSize &ge; 1"| G2(["经 Ask\n成交"])
     G1 --> G
     G2 --> G
     G --> I --> J --> K

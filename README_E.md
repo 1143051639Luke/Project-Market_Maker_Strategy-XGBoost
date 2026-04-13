@@ -144,9 +144,9 @@ flowchart TB
     C --> D
     C --> E
     E --> F
-    F -->|"Bid: seller-initiated\nprice &le; quote\ncum &ge; 1"| G1(["Fill via\nBid"])
+    F -->|"Bid: seller-initiated\nprice &le; quote\nSize &ge; 1"| G1(["Fill via\nBid"])
     F -->|"No match"| H
-    F -->|"Ask: buyer-initiated\nprice &ge; quote\ncum &ge; 1"| G2(["Fill via\nAsk"])
+    F -->|"Ask: buyer-initiated\nprice &ge; quote\nSize &ge; 1"| G2(["Fill via\nAsk"])
     G1 --> G
     G2 --> G
     G --> I --> J --> K
