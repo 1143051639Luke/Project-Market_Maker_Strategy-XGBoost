@@ -343,35 +343,37 @@ The Sharpe drops from 29.69 to 11.74 on out-of-sample data, indicating some degr
 
 **Order Book Imbalance (OBI)**
 
-$$\text{OBI}_n = \frac{\sum_{i=1}^{n} \text{bid\_size}_i \;-\; \sum_{i=1}^{n} \text{ask\_size}_i}{\sum_{i=1}^{n} \text{bid\_size}_i \;+\; \sum_{i=1}^{n} \text{ask\_size}_i}$$
+$$\text{OBI}_n = \frac{B_n - A_n}{B_n + A_n}$$
 
-**Normalized True Range (NTR\_10s)**
+> where $B_n = \sum_{i=1}^{n} b_i$ (bid size at level *i*) and $A_n = \sum_{i=1}^{n} a_i$ (ask size at level *i*)
 
-$$\text{true\_range} = \max\!\bigl(H - L,\;\lvert H - C_{\text{prev}}\rvert,\;\lvert L - C_{\text{prev}}\rvert\bigr)$$
+**Normalized True Range (NTR, 10 s)**
 
-$$\text{NTR} = \frac{\text{true\_range}}{\text{mid}} \times 10{,}000 \;\text{(bps)}$$
+$$\text{TR} = \max\bigl(H - L, \; \lvert H - C_{\text{prev}}\rvert, \; \lvert L - C_{\text{prev}}\rvert\bigr)$$
 
-where *H*, *L* are the high/low trade prices in the 10 s window, and *C*\_prev is the last trade price before the window.
+$$\text{NTR} = \frac{\text{TR}}{M} \times 10000 \;\text{ (bps)}$$
 
-**Mid-price Standard Deviation (mid\_std\_2s)**
+> where *H*, *L* = high / low trade prices in the 10 s window, *C*<sub>prev</sub> = last trade price before the window, *M* = mid price
 
-$$\text{mid\_std} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (m_i - \bar{m})^2}$$
+**Mid-price Standard Deviation (2 s)**
 
-Population standard deviation of all order book event mid prices within [t &minus; 2 s, t].
+$$\sigma_{\text{mid}} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (m_i - \bar{m})^{2}}$$
+
+> Population std of all OB event mid prices within [t &minus; 2 s, t]
 
 **Spread (bps)**
 
-$$\text{spread\_bps} = \frac{\text{best\_ask} - \text{best\_bid}}{\text{mid}} \times 10{,}000$$
+$$S = \frac{P_{\text{ask}} - P_{\text{bid}}}{M} \times 10000$$
 
-**Trade Flow**
+**Trade Flow (10 s)**
 
-$$\text{trade\_flow\_10s} = \sum_{i \,\in\, [t-10s,\; t)} \text{sign}_i \times \text{size}_i$$
+$$F = \sum_{i \in [t-10s, \; t)} d_i \cdot v_i$$
 
-where sign = +1 for buyer-initiated, &minus;1 for seller-initiated.
+> where *d* = +1 (buyer-initiated) or &minus;1 (seller-initiated), *v* = trade size
 
 **Cumulative Volume (5 bps)**
 
-$$\text{cumulativeVolume\_5bps} = \sum_{\text{bid levels within 5 bps}} \text{size} \;+\; \sum_{\text{ask levels within 5 bps}} \text{size}$$
+$$V_{5} = \sum_{\text{bid levels} \leq 5\text{bps}} v_i \;+\; \sum_{\text{ask levels} \leq 5\text{bps}} v_i$$
 
 </details>
 

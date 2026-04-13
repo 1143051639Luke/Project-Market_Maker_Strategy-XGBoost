@@ -6,9 +6,9 @@
 
 <div align="center">
 
-# BTC-USDT-SWAP 做市回测流水线
+# BTC-USDT-SWAP 做市回测项目
 
-*基于机器学习的 BTC-USDT-SWAP 永续合约做市策略，*
+*基于机器学习的 BTC-USDT-SWAP 做市策略，*
 *优化报价偏移选择与执行决策。*
 
 <br>
@@ -19,7 +19,7 @@
 
 <br>
 
-## 流水线概览
+## 项目概览
 
 ```mermaid
 flowchart LR
@@ -55,8 +55,8 @@ flowchart LR
 
 | 来源 | 格式 | 内容 |
 |--------|--------|---------|
-| **订单簿** | `BTC-USDT-SWAP-L2orderbook-400lv-YYYY-MM-DD.data` | 400 档 L2 快照 + 增量更新 |
-| **成交数据** | `BTC-USDT-SWAP-trades-YYYY-MM-DD.csv` | 逐笔成交记录（含主动方向） |
+| **订单簿** | `BTC-USDT-SWAP-L2orderbook-400lv-YYYY-MM-DD.data` | 400 Levels Order Book Data |
+| **成交数据** | `BTC-USDT-SWAP-trades-YYYY-MM-DD.csv` | 逐笔成交记录 |
 
 <details>
 <summary><b>数据缺失项</b></summary>
@@ -70,13 +70,13 @@ flowchart LR
 - 参与者身份与订单 ID
 - 订单到达率与撤单模式
 
-鉴于这些限制，本项目并非复制完整的做市策略，而是从可用数据中提取最重要的信号，并将其嵌入基于机器学习的流水线中。
+鉴于这些限制，本项目并非复制完整的做市策略，而是从可用数据中提取最重要的信号，并将其嵌入基于机器学习的项目中。
 
 </details>
 
 ---
 
-## 步骤一 &mdash; 特征选择与数据流水线
+## 步骤一 &mdash; 特征选择与数据项目
 
 ### 特征 (X)
 
@@ -86,7 +86,7 @@ flowchart LR
 | `OBI25` | 方向性 | 订单簿失衡 &mdash; 前 25 档 |
 | `OBI400` | 方向性 | 订单簿失衡 &mdash; 全部 400 档 |
 | `NTR_10s` | 波动性 | 10 秒窗口内的归一化真实波幅（bps） |
-| `mid_std_2s` | 波动性 | \[t &minus; 2s, t\] 内所有订单簿事件中间价的总体标准差 |
+| `mid_std_2s` | 波动性 | [t-2s, t] 内所有订单簿事件中间价的总体标准差 |
 | `spread_bps` | 流动性 | 最优买卖价差（基点） |
 | `trade_flow_10s` | 方向性 | 10 秒内的净签名成交量 |
 | `trade_count_10s` | 活跃度 | 10 秒窗口内的成交笔数 |
@@ -101,7 +101,7 @@ flowchart LR
 OFFSETS_BPS = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.25)
 ```
 
-对于每个候选偏移，流水线模拟成交尝试和平仓，然后选择使 PnL 最大化的偏移。此标注步骤使用未来数据（\[t, t + 1s\] 内的成交数据和 t\_fill + 1s 时刻的订单簿）来构建真实标签。
+对于每个候选偏移，项目模拟成交尝试和平仓，然后选择使 PnL 最大化的偏移。此标注步骤使用未来数据（\[t, t + 1s\] 内的成交数据和 t\_fill + 1s 时刻的订单簿）来构建真实标签。
 
 ### 假设条件
 
@@ -118,7 +118,7 @@ OFFSETS_BPS = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.25)
 | 成交价格 | 以挂单报价成交 |
 | 交易手续费 | 无 |
 
-### 数据流水线
+### 数据项目
 
 ```mermaid
 flowchart TB
@@ -343,35 +343,37 @@ $$\text{Calmar} = \frac{\text{年化收益率}}{\text{最大回撤}}$$
 
 **订单簿失衡 (OBI)**
 
-$$\text{OBI}_n = \frac{\sum_{i=1}^{n} \text{bid\_size}_i \;-\; \sum_{i=1}^{n} \text{ask\_size}_i}{\sum_{i=1}^{n} \text{bid\_size}_i \;+\; \sum_{i=1}^{n} \text{ask\_size}_i}$$
+$$\text{OBI}_n = \frac{B_n - A_n}{B_n + A_n}$$
 
-**归一化真实波幅 (NTR\_10s)**
+> 其中 $B_n = \sum_{i=1}^{n} b_i$（第 *i* 档买方挂单量），$A_n = \sum_{i=1}^{n} a_i$（第 *i* 档卖方挂单量）
 
-$$\text{true\_range} = \max\!\bigl(H - L,\;\lvert H - C_{\text{prev}}\rvert,\;\lvert L - C_{\text{prev}}\rvert\bigr)$$
+**归一化真实波幅 (NTR, 10 s)**
 
-$$\text{NTR} = \frac{\text{true\_range}}{\text{mid}} \times 10{,}000 \;\text{(bps)}$$
+$$\text{TR} = \max\bigl(H - L, \; \lvert H - C_{\text{prev}}\rvert, \; \lvert L - C_{\text{prev}}\rvert\bigr)$$
 
-其中 *H*、*L* 为 10 秒窗口内的最高/最低成交价，*C*\_prev 为窗口前的最后一笔成交价。
+$$\text{NTR} = \frac{\text{TR}}{M} \times 10000 \;\text{ (bps)}$$
 
-**中间价标准差 (mid\_std\_2s)**
+> 其中 *H*、*L* = 10 秒窗口内的最高/最低成交价，*C*<sub>prev</sub> = 窗口前的最后一笔成交价，*M* = 中间价
 
-$$\text{mid\_std} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (m_i - \bar{m})^2}$$
+**中间价标准差 (2 s)**
 
-\[t &minus; 2s, t\] 内所有订单簿事件中间价的总体标准差。
+$$\sigma_{\text{mid}} = \sqrt{\frac{1}{N} \sum_{i=1}^{N} (m_i - \bar{m})^{2}}$$
+
+> [t &minus; 2s, t] 内所有订单簿事件中间价的总体标准差
 
 **价差 (bps)**
 
-$$\text{spread\_bps} = \frac{\text{best\_ask} - \text{best\_bid}}{\text{mid}} \times 10{,}000$$
+$$S = \frac{P_{\text{ask}} - P_{\text{bid}}}{M} \times 10000$$
 
-**成交流量**
+**成交流量 (10 s)**
 
-$$\text{trade\_flow\_10s} = \sum_{i \,\in\, [t-10s,\; t)} \text{sign}_i \times \text{size}_i$$
+$$F = \sum_{i \in [t-10s, \; t)} d_i \cdot v_i$$
 
-其中 sign = +1 为买方主动成交，&minus;1 为卖方主动成交。
+> 其中 *d* = +1（买方主动成交）或 &minus;1（卖方主动成交），*v* = 成交量
 
 **累计深度 (5 bps)**
 
-$$\text{cumulativeVolume\_5bps} = \sum_{\text{5 bps 内的 bid 档位}} \text{size} \;+\; \sum_{\text{5 bps 内的 ask 档位}} \text{size}$$
+$$V_{5} = \sum_{\text{bid levels} \leq 5\text{bps}} v_i \;+\; \sum_{\text{ask levels} \leq 5\text{bps}} v_i$$
 
 </details>
 
@@ -419,7 +421,7 @@ $$\text{cumulativeVolume\_5bps} = \sum_{\text{5 bps 内的 bid 档位}} \text{si
 ```
 project_intern/
 ├── code/
-│   ├── step1.py                  # 数据流水线与标注
+│   ├── step1.py                  # 数据项目与标注
 │   ├── step2_1.py                # 偏移分类器训练
 │   ├── step2_2.py                # 偏移回归器训练（备选）
 │   ├── step2_3.py                # 执行分类器训练
