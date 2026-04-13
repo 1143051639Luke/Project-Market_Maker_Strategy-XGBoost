@@ -1,7 +1,8 @@
 <div align="right">
 
 **EN** [English](README_E.md) &nbsp;|&nbsp; **中文** [简体中文](README.md)
-
+<br>
+<sub>注：部分专业术语在中文版中可能不够精确，建议对照 <a href="README_E.md">英文版</a> 参考。如有疑问欢迎随时联系我。</sub>
 </div>
 
 <div align="center">
